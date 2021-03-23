@@ -7,6 +7,7 @@ CAD - for cad files.
 INO - for .ino Arduino code.
 
 MAN - for man pages.
+	- https://github.com/rurewa/RoboFootball/blob/main/MAN/man.md
 
 	- https://github.com/rurewa/RoboFootball/blob/main/MAN/man.md
 
