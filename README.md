@@ -27,3 +27,7 @@ http://izob.net/robofootbal
 Управление джойстиком
 
 http://www.electronica52.in.ua/proekty-arduino/robot-na-arduino-2--4-wd-s-upravleniem-dzhojstikom-gamepad-ps-2
+
+Описание ps2x motor shield control 4 dc
+
+https://github.com/emakefun/MotorDriverBoard
