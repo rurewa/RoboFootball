@@ -7,7 +7,7 @@
 #include "QGPMaker_MotorShield.h"
 
 // Пины радиомодуля
-const int PS2_DAT = 12;    
+const int PS2_DAT = 12;
 const int PS2_CMD = 11;
 const int PS2_SEL = 10;
 const int PS2_CLK = 13;
@@ -49,10 +49,12 @@ void setup() {
     if (error == 0) {
       Serial.println("\nConfigured successful! ");
       break;
-    } else {
+    }
+    else {
       delay(100);
     }
-  } while (1);
+  }
+  while (true);
   AFMS.begin(50);  // Задаём частоту по умолчанию 1.6KHz
 }
 
@@ -70,20 +72,24 @@ void loop() {
     DCMotor_1->setSpeed(250);
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(FORWARD);
-  } else  if (ps2x.Button(PSB_PAD_RIGHT)) {
+  }
+  else  if (ps2x.Button(PSB_PAD_RIGHT)) {
     Serial.print("Right held this hard: ");
     Serial.println(ps2x.Analog(PSAB_PAD_RIGHT), DEC);
-  } else  if (ps2x.Button(PSB_PAD_LEFT)) {
+  }
+  else  if (ps2x.Button(PSB_PAD_LEFT)) {
     Serial.print("LEFT held this hard: ");
     Serial.println(ps2x.Analog(PSAB_PAD_LEFT), DEC);
-  } else  if (ps2x.Button(PSB_PAD_DOWN)) {
+  }
+  else  if (ps2x.Button(PSB_PAD_DOWN)) {
     Serial.print("DOWN held this hard: ");
     Serial.println(ps2x.Analog(PSAB_PAD_DOWN), DEC);
     DCMotor_3->setSpeed(250);
     DCMotor_1->setSpeed(250);
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(BACKWARD);
-  } else {
+  }
+  else {
     DCMotor_3->setSpeed(0);
     DCMotor_3->run(RELEASE);
     DCMotor_1->setSpeed(0);
@@ -100,24 +106,19 @@ void loop() {
   vibrate = ps2x.Analog(PSAB_CROSS);
   // Будет ИСТИНА, если какая-либо кнопка изменит состояние (включено на выключено или выключено на включено)
   if (ps2x.NewButtonState()) {
-    if (ps2x.Button(PSB_L3))
-      Serial.println("L3 pressed");
-    if (ps2x.Button(PSB_R3))
-      Serial.println("R3 pressed");
-    if (ps2x.Button(PSB_L2))
-      Serial.println("L2 pressed");
-    if (ps2x.Button(PSB_R2))
-      Serial.println("R2 pressed");
-    if (ps2x.Button(PSB_TRIANGLE)) // Кнопка с треугольником
-      Serial.println("Triangle pressed");
+    if (ps2x.Button(PSB_L3)) { Serial.println("L3 pressed"); }
+    if (ps2x.Button(PSB_R3)) { Serial.println("R3 pressed"); }
+    if (ps2x.Button(PSB_L2)) { Serial.println("L2 pressed"); }
+    if (ps2x.Button(PSB_R2)) { Serial.println("R2 pressed"); }
+    // Кнопка с треугольником
+    if (ps2x.Button(PSB_TRIANGLE)) { Serial.println("Triangle pressed"); }
   }
-
-  if (ps2x.ButtonPressed(PSB_CIRCLE))              // Кнопка с кругом
-    Serial.println("Circle just pressed");
-  if (ps2x.NewButtonState(PSB_CROSS))              // Кнопка с крестом
-    Serial.println("X just changed");
-  if (ps2x.ButtonReleased(PSB_SQUARE))             // Кнопка с квадратом
-    Serial.println("Square just released");
+  // Кнопка с кругом
+  if (ps2x.ButtonPressed(PSB_CIRCLE)) { Serial.println("Circle just pressed"); }
+  // Кнопка с крестом  
+  if (ps2x.NewButtonState(PSB_CROSS)) { Serial.println("X just changed"); } 
+  // Кнопка с квадратом
+  if (ps2x.ButtonReleased(PSB_SQUARE)) { Serial.println("Square just released"); }
 
   if (ps2x.Button(PSB_L1) || ps2x.Button(PSB_R1)) {
     Serial.print("Stick Values:");
