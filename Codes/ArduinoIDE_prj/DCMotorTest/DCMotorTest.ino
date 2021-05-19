@@ -1,25 +1,32 @@
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+// Test motors for ps2x motor shield v5.2
+// V 1.0
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 #include <Wire.h>
 #include "QGPMaker_MotorShield.h"
 
 //Объект шины I2C address
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield();
 
-// Объекты моторов (3) или (1) на шилде
+// Объекты моторов (M3) или (M1) на шилде
 QGPMaker_DCMotor *myMotorR = AFMS.getMotor(3);
 QGPMaker_DCMotor *myMotorL = AFMS.getMotor(1);
 
+// Скорость ШИМ для левой и правой стороны
+const int SPEED_PWM_LEFT = 200;
+const int SPEED_PWM_RIGHT = 200;
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("DC Motor test!");
   AFMS.begin();  // Задаём частоты по умолчанию 1.6KHz
 }
 
 void loop() {
   // Run forward
   myMotorR->run(FORWARD);
-  myMotorR->setSpeed(155);
+  myMotorR->setSpeed(SPEED_PWM_RIGHT);
   myMotorL->run(FORWARD);
-  myMotorL->setSpeed(155);
+  myMotorL->setSpeed(SPEED_PWM_LEFT);
   delay(2000);
   // Stop
   myMotorR->run(RELEASE);
@@ -27,9 +34,9 @@ void loop() {
   delay(1000);
   // Run backward
   myMotorR->run(BACKWARD);
-  myMotorR->setSpeed(155);
+  myMotorR->setSpeed(SPEED_PWM_RIGHT);
   myMotorL->run(BACKWARD);
-  myMotorL->setSpeed(155);
+  myMotorL->setSpeed(SPEED_PWM_LEFT);
   delay(2000);
   // Stop
   myMotorR->run(RELEASE);
@@ -37,9 +44,9 @@ void loop() {
   delay(1000);
   // Run left
   myMotorR->run(FORWARD);
-  myMotorR->setSpeed(155);
+  myMotorR->setSpeed(SPEED_PWM_RIGHT);
   myMotorL->run(BACKWARD);
-  myMotorL->setSpeed(155);
+  myMotorL->setSpeed(SPEED_PWM_LEFT);
   delay(2000);
   // Stop
   myMotorR->run(RELEASE);
@@ -47,9 +54,9 @@ void loop() {
   delay(1000);
   // Run right
   myMotorR->run(BACKWARD);
-  myMotorR->setSpeed(155);
+  myMotorR->setSpeed(SPEED_PWM_RIGHT);
   myMotorL->run(FORWARD);
-  myMotorL->setSpeed(155);
+  myMotorL->setSpeed(SPEED_PWM_LEFT);
   delay(2000);
   // Stop
   myMotorR->run(RELEASE);
@@ -85,3 +92,6 @@ void loop() {
   delay(1000);
   */
 }
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+// END FILE
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
