@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include "QGPMaker_MotorShield.h"
 
-//Объект шины I2C address
+// Объект шины I2C
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield();
 
 // Объекты моторов (M3) или (M1) на шилде
@@ -18,7 +18,7 @@ const int SPEED_PWM_RIGHT = 200;
 
 void setup() {
   Serial.begin(9600);
-  AFMS.begin();  // Задаём частоты по умолчанию 1.6KHz
+  AFMS.begin();  // Задаём частоту по умолчанию 1.6KHz
 }
 
 void loop() {
