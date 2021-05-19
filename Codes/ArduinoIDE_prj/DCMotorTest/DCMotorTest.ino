@@ -18,7 +18,7 @@ const int SPEED_PWM_RIGHT = 200;
 
 void setup() {
   Serial.begin(9600);
-  AFMS.begin();  // Задаём частоту по умолчанию 1.6KHz
+  AFMS.begin();  // Инициализация библиотеки. Задаём частоту по умолчанию 1.6KHz
 }
 
 void loop() {

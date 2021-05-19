@@ -39,7 +39,7 @@ QGPMaker_DCMotor  *DCMotor_3 = AFMS.getMotor(3);
 QGPMaker_DCMotor  *DCMotor_1 = AFMS.getMotor(1);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // Инициализация библиотеки
   AFMS.begin(50);
   Serial.println("===========beging==========");
   // Диагностика контроллера PS2X
