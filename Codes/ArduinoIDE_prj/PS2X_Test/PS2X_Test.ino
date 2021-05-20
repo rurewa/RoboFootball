@@ -45,7 +45,7 @@ void setup() {
   // Диагностика контроллера PS2X
   int error = 0;
   do {
-    error = ps2x.config_gamepad(13, 11, 10, 12, true, true);
+    error = ps2x.config_gamepad(PS2_CLK, PS2_CMD, PS2_SEL, PS2_DAT, true, true);
     if (error == 0) {
       Serial.println("\nConfigured successful! ");
       break;
@@ -64,7 +64,7 @@ void loop() {
     Serial.println("Start is being held");
   if (ps2x.Button(PSB_SELECT))
     Serial.println("Select is being held");
-
+  // Движение вперёд
   if (ps2x.Button(PSB_PAD_UP)) {     // Будет ИСТИНА, пока нажата кнопка
     Serial.print("Up held this hard: ");
     Serial.println(ps2x.Analog(PSAB_PAD_UP), DEC);
@@ -81,6 +81,7 @@ void loop() {
     Serial.print("LEFT held this hard: ");
     Serial.println(ps2x.Analog(PSAB_PAD_LEFT), DEC);
   }
+  // Движение назад
   else  if (ps2x.Button(PSB_PAD_DOWN)) {
     Serial.print("DOWN held this hard: ");
     Serial.println(ps2x.Analog(PSAB_PAD_DOWN), DEC);
@@ -89,6 +90,7 @@ void loop() {
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(BACKWARD);
   }
+  // Останов
   else {
     DCMotor_3->setSpeed(0);
     DCMotor_3->run(RELEASE);
@@ -115,8 +117,8 @@ void loop() {
   }
   // Кнопка с кругом
   if (ps2x.ButtonPressed(PSB_CIRCLE)) { Serial.println("Circle just pressed"); }
-  // Кнопка с крестом  
-  if (ps2x.NewButtonState(PSB_CROSS)) { Serial.println("X just changed"); } 
+  // Кнопка с крестом
+  if (ps2x.NewButtonState(PSB_CROSS)) { Serial.println("X just changed"); }
   // Кнопка с квадратом
   if (ps2x.ButtonReleased(PSB_SQUARE)) { Serial.println("Square just released"); }
 
@@ -135,3 +137,4 @@ void loop() {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 // END FILE
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+
