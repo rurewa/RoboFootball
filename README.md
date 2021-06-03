@@ -4,7 +4,7 @@ Project structure:
 
 CAD - for cad files.
 
-INO - for .ino Arduino code.
+Codes - for .ino Arduino code.
 
 MAN - for man pages.
 
