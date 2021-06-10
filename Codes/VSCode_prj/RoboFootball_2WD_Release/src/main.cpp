@@ -1,5 +1,5 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-// Test for ps2x motor shield v5.2 & PS2X controll
+// Release for ps2x motor shield v5.2 & PS2X controll
 // Для перезапуска связи контроллера с радиомодулем шилда нажать на START
 // Свободные пины шилда: D5, D6 (к одному из них можно подключить соленоид)
 // V 1.0
@@ -58,6 +58,7 @@ void setup() {
   }
   while (true);
   AFMS.begin(50);  // Задаём частоту. По умолчанию 1.6KHz
+  pinMode(5, OUTPUT);
 }
 
 void loop() {
@@ -80,8 +81,8 @@ void loop() {
     if (ps2x.Button(PSB_L3)) { Serial.println("L3 pressed"); } // Левого
     if (ps2x.Button(PSB_R3)) { Serial.println("R3 pressed"); } // Правого
     // Нажатие самых нижних кнопок с торца. Можно использовать для соленоида
-    if (ps2x.Button(PSB_L2)) { Serial.println("L2 pressed"); }
-    if (ps2x.Button(PSB_R2)) { Serial.println("R2 pressed"); }
+    if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) { Serial.println("L2 pressed"); digitalWrite(5, HIGH); } else { digitalWrite(5, LOW); }
+    //if (ps2x.Button(PSB_R2)) { Serial.println("R2 pressed"); digitalWrite(5, HIGH); } else { digitalWrite(5, LOW); }
     // Нажатие самых нижних кнопок с торца. Можно использовать для соленоида
     if (ps2x.Button(PSB_L1)) { Serial.println("L1 pressed"); }
     if (ps2x.Button(PSB_R1)) { Serial.println("R1 pressed"); }
@@ -100,11 +101,12 @@ void loop() {
   if (ps2x.Analog(PSS_LY) > 130) {
     DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
     DCMotor_3->run(BACKWARD);
-
+    Serial.println(ps2x.Analog(PSS_LY), DEC);
   }
   else if (ps2x.Analog(PSS_LY) < 125) {
     DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 30, 255)));
     DCMotor_3->run(FORWARD);
+    Serial.println(ps2x.Analog(PSS_LY), DEC);
   }
   else {
     DCMotor_3->setSpeed(0);
