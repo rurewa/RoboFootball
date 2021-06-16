@@ -1,5 +1,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 // Release for ps2x motor shield v5.2 & PS2X controll
+// Настройка контроллера на новое управление: правый джойстик - быстрая езда
+// Левый джойстик - медленная езда.
 // Для перезапуска связи контроллера с радиомодулем шилда нажать на START
 // Свободные пины шилда: D5, D6 (к одному из них можно подключить соленоид)
 // V 1.0
@@ -81,7 +83,8 @@ void loop() {
     if (ps2x.Button(PSB_L3)) { Serial.println("L3 pressed"); } // Левого
     if (ps2x.Button(PSB_R3)) { Serial.println("R3 pressed"); } // Правого
     // Нажатие самых нижних кнопок с торца. Можно использовать для соленоида
-    if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) { Serial.println("L2 pressed"); digitalWrite(5, HIGH); } else { digitalWrite(5, LOW); }
+    if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) { Serial.println("L2 pressed"); digitalWrite(5, HIGH); }
+    else { digitalWrite(5, LOW); }
     //if (ps2x.Button(PSB_R2)) { Serial.println("R2 pressed"); digitalWrite(5, HIGH); } else { digitalWrite(5, LOW); }
     // Нажатие самых нижних кнопок с торца. Можно использовать для соленоида
     if (ps2x.Button(PSB_L1)) { Serial.println("L1 pressed"); }
@@ -97,14 +100,42 @@ void loop() {
   if (ps2x.ButtonReleased(PSB_SQUARE)) { Serial.println("Square just released"); }
   //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
   // Управление джойстиками
-  // Левый джойстик
-  if (ps2x.Analog(PSS_LY) > 130) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
+  // Левый джойстик LX
+  if (ps2x.Analog(PSS_LX) > 130) { // Вправо
+    /*
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LX), 255, 155, 20, 10)));
+    DCMotor_3->run(FORWARD);
+    */
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LX), 200, 155, 30, 10)));
+    DCMotor_1->run(BACKWARD);
+    Serial.println(ps2x.Analog(PSS_LX), DEC);
+  }
+  else if (ps2x.Analog(PSS_LX) < 125) { // Влево
+    /*DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LX), 145, 0, 10, 20)));
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LX), 255, 0, 30, 10)));
+    DCMotor_1->run(FORWARD);
+    Serial.println(ps2x.Analog(PSS_LX), DEC);
+    */
+  }
+
+  else {
+    /*
+    DCMotor_3->setSpeed(0);
+    DCMotor_3->run(RELEASE);
+    */
+    DCMotor_1->setSpeed(0);
+    DCMotor_1->run(RELEASE);
+  }
+  /*
+  // LY
+  if (ps2x.Analog(PSS_LY) > 135) {
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 0, 0, 0, 0)));
     DCMotor_3->run(BACKWARD);
     Serial.println(ps2x.Analog(PSS_LY), DEC);
   }
-  else if (ps2x.Analog(PSS_LY) < 125) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 30, 255)));
+  else if (ps2x.Analog(PSS_LY) < 120) {
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 0, 0, 0, 0)));
     DCMotor_3->run(FORWARD);
     Serial.println(ps2x.Analog(PSS_LY), DEC);
   }
@@ -113,7 +144,9 @@ void loop() {
     DCMotor_3->run(RELEASE);
 
   }
+  */
   // Правый джойстик
+  /*
   if (ps2x.Analog(PSS_RY) > 130) {
     DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RY), 130, 255, 30, 255)));
     DCMotor_1->run(BACKWARD);
@@ -127,6 +160,7 @@ void loop() {
     DCMotor_1->setSpeed(0);
     DCMotor_1->run(RELEASE);
   }
+  */
   delay(50);
 }
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
