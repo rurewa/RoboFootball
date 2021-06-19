@@ -29,8 +29,8 @@ byte vibrate = 0;
 // Объект шины I2C
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield();
 // Объекты моторов (M3) или (M1) на шилде
-QGPMaker_DCMotor  *DCMotor_3 = AFMS.getMotor(3); // Правая сторона
-QGPMaker_DCMotor  *DCMotor_1 = AFMS.getMotor(1); // Левая сторона
+QGPMaker_DCMotor  *DCMotor_3 = AFMS.getMotor(3); // Левая сторона
+QGPMaker_DCMotor  *DCMotor_1 = AFMS.getMotor(1); // Правая сторона
 
 void setup() {
   Serial.begin(9600); // Инициализация библиотеки
@@ -69,38 +69,49 @@ void loop() {
     else { digitalWrite(actuator, LOW); }
   }
   //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-  // Управление джойстиками
-  // Левый джойстик. Вперёд - назад
-  if (ps2x.Analog(PSS_LY) > 130) { // > 130. Назад
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 10, 20))); // 130, 255, 30, 255
+  if (ps2x.Analog(PSS_LY) > 130) { // > 130. Вперёд
+    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 135, 255, 10, 10))); // 130, 255, 10, 20
+    DCMotor_3->setSpeed(10); // 130, 255, 10, 20
+    DCMotor_1->setSpeed(10); // 130, 255, 10, 20
     DCMotor_3->run(BACKWARD);
-    Serial.println(ps2x.Analog(PSS_LY), DEC);
+    DCMotor_1->run(BACKWARD);
   }
-  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Вперёд
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 120, 0, 10, 20))); // 125, 0, 30, 255
+  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Назад
+    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 10, 10)));
+    DCMotor_3->setSpeed(10);
+    DCMotor_1->setSpeed(10);
     DCMotor_3->run(FORWARD);
-    Serial.println(ps2x.Analog(PSS_LY), DEC);
+    DCMotor_1->run(FORWARD);
   }
   else {
     DCMotor_3->setSpeed(0);
+    DCMotor_1->setSpeed(0);
     DCMotor_3->run(RELEASE);
-
+    DCMotor_1->run(RELEASE);
   }
-  // Левый джойстик. Влево - вправо
-  if (ps2x.Analog(PSS_LX) > 128) { // > 130. Вправо
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LX), 128, 255, 10, 10))); // 130, 255, 10, 20
-    DCMotor_3->run(FORWARD);
+  // Левый джойстик. Медленно. Влево - вправо
+
+  if (ps2x.Analog(PSS_LX) > 128) { // > 128. Вправо
+    DCMotor_3->setSpeed(10); // 130, 255, 10, 20
+    DCMotor_1->setSpeed(10); // 130, 255, 10, 20
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(FORWARD);
 
   }
   else if (ps2x.Analog(PSS_LX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LX), 120, 0, 10, 10)));
-    DCMotor_3->run(BACKWARD);
+    DCMotor_3->setSpeed(10);
+    DCMotor_1->setSpeed(10);
+    DCMotor_3->run(FORWARD);
+    DCMotor_1->run(BACKWARD);
   }
   else {
     DCMotor_3->setSpeed(0);
+    DCMotor_1->setSpeed(0);
     DCMotor_3->run(RELEASE);
+    DCMotor_1->run(RELEASE);
   }
   delay(50);
+
 }
 // Тест моторов без джойстика
 /*
