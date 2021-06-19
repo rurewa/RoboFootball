@@ -70,35 +70,35 @@ void loop() {
   }
   //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
   // Управление джойстиками
-  // Левый джойстик
-  if (ps2x.Analog(PSS_LY) > 130) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
+  // Левый джойстик. Вперёд - назад
+  if (ps2x.Analog(PSS_LY) > 130) { // > 130. Назад
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 10, 20))); // 130, 255, 30, 255
     DCMotor_3->run(BACKWARD);
     Serial.println(ps2x.Analog(PSS_LY), DEC);
   }
-  else if (ps2x.Analog(PSS_LY) < 125) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 30, 255)));
+  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Вперёд
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 120, 0, 10, 20))); // 125, 0, 30, 255
     DCMotor_3->run(FORWARD);
     Serial.println(ps2x.Analog(PSS_LY), DEC);
   }
-  else { // Останов двигателя
+  else {
     DCMotor_3->setSpeed(0);
     DCMotor_3->run(RELEASE);
 
   }
-  // Правый джойстик
-  if (ps2x.Analog(PSS_RY) > 130) {
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RY), 130, 255, 30, 255)));
-    DCMotor_1->run(BACKWARD);
+  // Левый джойстик. Влево - вправо
+  if (ps2x.Analog(PSS_LX) > 128) { // > 130. Вправо
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LX), 128, 255, 10, 10))); // 130, 255, 10, 20
+    DCMotor_3->run(FORWARD);
 
   }
-  else if (ps2x.Analog(PSS_RY) < 125) {
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RY), 125, 0, 30, 255)));
-    DCMotor_1->run(FORWARD);
+  else if (ps2x.Analog(PSS_LX) < 125) { // < 125. Влево
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LX), 120, 0, 10, 10)));
+    DCMotor_3->run(BACKWARD);
   }
-  else { // Останов двигателя
-    DCMotor_1->setSpeed(0);
-    DCMotor_1->run(RELEASE);
+  else {
+    DCMotor_3->setSpeed(0);
+    DCMotor_3->run(RELEASE);
   }
   delay(50);
 }
