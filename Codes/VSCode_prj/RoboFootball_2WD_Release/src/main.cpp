@@ -17,20 +17,19 @@ const int PS2_CLK = 13;
 
 PS2X ps2x; // Класс PS2 контроллера
 
-const int actuator = 5; // Соленоид
-const int SPEED_PWM_SLOW = 10;
-const int SPEED_PWM_FAST= 50;
-byte vibrate = 0;
+const int ACTUATOR = 5; // Пин соленоид
+const int SPEED_PWM_SLOW = 10; // Медленная скорость
+//const int SPEED_PWM_FAST = 50;
 // Функции управления
 void movePSBpad(); // Движение кнопками
 void leftJoystick(); // Медленное движение
 void rightJoystick(); // Быстрое движение
-void flashActuator(); // Соленоид
+void kickActuator(); // Соленоид
 
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield(); // Объект шины I2C
 // Объекты моторов (M3) или (M1) на шилде
-QGPMaker_DCMotor  *DCMotor_3 = AFMS.getMotor(3); // Левая сторона
-QGPMaker_DCMotor  *DCMotor_1 = AFMS.getMotor(1); // Правая сторона
+QGPMaker_DCMotor *DCMotor_3 = AFMS.getMotor(3); // Левая сторона
+QGPMaker_DCMotor *DCMotor_1 = AFMS.getMotor(1); // Правая сторона
 
 void setup() {
   Serial.begin(9600);
@@ -47,18 +46,19 @@ void setup() {
     ps2x.read_gamepad(false, 0);
     delay(10);
   }
-  pinMode(actuator, OUTPUT);
+  pinMode(ACTUATOR, OUTPUT);
 }
 
 void loop() {
-  ps2x.read_gamepad(false, vibrate); // Читаем контроллер и установаем вибро-мотор
+  byte vibrate = 0;
+  ps2x.read_gamepad(false, vibrate); // Читаем контроллер и устанавливаем вибро-мотор
   if (ps2x.Button(PSB_CROSS)) { // Проверка работы джойстика (запуск вибро-мотора)
     Serial.println("X-X-X-X");
     ps2x.read_gamepad(true, 200);
     delay(300);
     ps2x.read_gamepad(false, 0);
   }
-  flashActuator(); // Соленоид
+  kickActuator(); // Соленоид
   movePSBpad(); // Движение кнопками
   leftJoystick(); // Медленное движение
   rightJoystick(); // Быстрое движение
@@ -125,7 +125,7 @@ void leftJoystick() { // Левый джойстик (медленная ско�
   else {} // Останов
 }
 
-void rightJoystick() { // Правый джойстик (регулируемая скорость.
+void rightJoystick() { // Правый джойстик (регулируемая скорость)
   if (ps2x.Analog(PSS_RY) > 130) { // По оси Y > 130. Назад
     DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
     DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
@@ -154,11 +154,11 @@ void rightJoystick() { // Правый джойстик (регулируема�
   else {} // Останов
 }
 
-void flashActuator() { // Нажатие кнопки пульта для выполнения соленоида
+void kickActuator() { // Нажатие кнопки пульта для выполнения соленоида
   if (ps2x.NewButtonState()) {
     if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) {
-      Serial.println("L2 and R2 pressed"); digitalWrite(actuator, HIGH); }
-    else { digitalWrite(actuator, LOW); }
+      Serial.println("L2 and R2 pressed"); digitalWrite(ACTUATOR, HIGH); }
+    else { digitalWrite(ACTUATOR, LOW); }
   }
 }
 // Тест моторов без джойстика
