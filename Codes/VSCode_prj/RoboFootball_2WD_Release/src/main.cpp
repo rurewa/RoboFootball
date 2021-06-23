@@ -43,6 +43,10 @@ void setup() {
     else { delay(100); }
   }
   while (true);
+  for(size_t i = 0; i < 50; i++) { // Очистка частот радиоканала
+    ps2x.read_gamepad(false, 0);
+    delay(10);
+  }
   pinMode(actuator, OUTPUT);
 }
 
