@@ -68,14 +68,14 @@ void loop() {
   //movePSBpad();
 
   // Левый джойстик (медленная скорость)
-  if (ps2x.Analog(PSS_LY) > 130) { // > 130. Вперёд
+  if (ps2x.Analog(PSS_LY) > 130) { // > 130. Назад
     //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 135, 255, 10, 10))); // 130, 255, 10, 20
     DCMotor_3->setSpeed(SPEED_PWM_SLOW); // 130, 255, 10, 20
     DCMotor_1->setSpeed(SPEED_PWM_SLOW); // 130, 255, 10, 20
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(BACKWARD);
   }
-  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Назад
+  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Вперёд
     //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 10, 10)));
     DCMotor_3->setSpeed(SPEED_PWM_SLOW);
     DCMotor_1->setSpeed(SPEED_PWM_SLOW);
@@ -103,17 +103,15 @@ void loop() {
   else {}
   //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
   // Правый джойстик (регулируемая скорость)/ По оси Y
-  if (ps2x.Analog(PSS_RY) > 130) { // > 130. Вперёд
-    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 135, 255, 10, 10))); // 130, 255, 10, 20
-    DCMotor_3->setSpeed(SPEED_PWM_FAST); // 130, 255, 10, 20
-    DCMotor_1->setSpeed(SPEED_PWM_FAST); // 130, 255, 10, 20
+  if (ps2x.Analog(PSS_RY) > 130) { // > 130. Назад
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(BACKWARD);
   }
-  else if (ps2x.Analog(PSS_RY) < 120) { // < 125. Назад
-    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 10, 10)));
-    DCMotor_3->setSpeed(SPEED_PWM_FAST);
-    DCMotor_1->setSpeed(SPEED_PWM_FAST);
+  else if (ps2x.Analog(PSS_RY) < 120) { // < 125. Вперёд
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(FORWARD);
   }
@@ -121,15 +119,15 @@ void loop() {
   else {}
   // По оси X
   if (ps2x.Analog(PSS_RX) > 128) { // > 128. Вправо
-    DCMotor_3->setSpeed(SPEED_PWM_FAST); // 130, 255, 10, 20
-    DCMotor_1->setSpeed(SPEED_PWM_FAST); // 130, 255, 10, 20
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255))); // 130, 255, 10, 20
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255))); // 130, 255, 10, 20
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(FORWARD);
 
   }
   else if (ps2x.Analog(PSS_RX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed(SPEED_PWM_FAST);
-    DCMotor_1->setSpeed(SPEED_PWM_FAST);
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(BACKWARD);
   }
