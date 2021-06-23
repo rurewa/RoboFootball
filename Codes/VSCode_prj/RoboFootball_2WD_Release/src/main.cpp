@@ -19,12 +19,12 @@ const int PS2_CLK = 13;
 PS2X ps2x; // Класс PS2 контроллера
 
 const int actuator = 5; // Соленоид
+const int SPEED_PWM = 10;
 int error = 0;
-//byte type = 0;
 byte vibrate = 0;
 
-//int lx = 0;
-//int ly =  0;
+void movePSBpad();
+void flashActuator();
 
 // Объект шины I2C
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield();
@@ -62,56 +62,97 @@ void loop() {
   }
   // Это установит силу вибро-мотора в зависимости от того, насколько сильно вы нажимаете синюю кнопку (X)
   vibrate = ps2x.Analog(PSAB_CROSS);
+  //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  flashActuator(); // Соленоид
 
+  if (ps2x.Analog(PSS_RY) > 130) { // > 130. Вперёд
+    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 135, 255, 10, 10))); // 130, 255, 10, 20
+    DCMotor_3->setSpeed(20); // 130, 255, 10, 20
+    DCMotor_1->setSpeed(20); // 130, 255, 10, 20
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(BACKWARD);
+  }
+  else if (ps2x.Analog(PSS_RY) < 120) { // < 125. Назад
+    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 10, 10)));
+    DCMotor_3->setSpeed(20);
+    DCMotor_1->setSpeed(20);
+    DCMotor_3->run(FORWARD);
+    DCMotor_1->run(FORWARD);
+  }
+  else {
+    DCMotor_3->setSpeed(0);
+    DCMotor_1->setSpeed(0);
+    DCMotor_3->run(RELEASE);
+    DCMotor_1->run(RELEASE);
+  }
+  // Правый джойстик. Медленно. Влево - вправо
+  if (ps2x.Analog(PSS_RX) > 128) { // > 128. Вправо
+    DCMotor_3->setSpeed(10); // 130, 255, 10, 20
+    DCMotor_1->setSpeed(10); // 130, 255, 10, 20
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(FORWARD);
+
+  }
+  else if (ps2x.Analog(PSS_RX) < 125) { // < 125. Влево
+    DCMotor_3->setSpeed(10);
+    DCMotor_1->setSpeed(10);
+    DCMotor_3->run(FORWARD);
+    DCMotor_1->run(BACKWARD);
+  }
+  else {}
+  delay(40);
+}
+
+void movePSBpad() {
+  // Движение вперёд
+  if (ps2x.Button(PSB_PAD_UP)) {     // Будет ИСТИНА, пока нажата кнопка
+    Serial.print("Up held this hard: ");
+    Serial.println(ps2x.Analog(PSAB_PAD_UP), DEC);
+    DCMotor_3->setSpeed(SPEED_PWM);
+    DCMotor_1->setSpeed(SPEED_PWM);
+    DCMotor_3->run(FORWARD);
+    DCMotor_1->run(FORWARD);
+  }
+  else  if (ps2x.Button(PSB_PAD_RIGHT)) { // Движение вправо
+    Serial.print("Right held this hard: ");
+    DCMotor_3->setSpeed(SPEED_PWM);
+    DCMotor_1->setSpeed(SPEED_PWM);
+    DCMotor_3->run(FORWARD);
+    DCMotor_1->run(BACKWARD);
+    Serial.println(ps2x.Analog(PSAB_PAD_RIGHT), DEC);
+  }
+  else  if (ps2x.Button(PSB_PAD_LEFT)) { // Движение влево
+    Serial.print("LEFT held this hard: ");
+    DCMotor_3->setSpeed(SPEED_PWM);
+    DCMotor_1->setSpeed(SPEED_PWM);
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(FORWARD);
+    Serial.println(ps2x.Analog(PSAB_PAD_LEFT), DEC);
+  }
+  // Движение назад
+  else  if (ps2x.Button(PSB_PAD_DOWN)) {
+    Serial.print("DOWN held this hard: ");
+    Serial.println(ps2x.Analog(PSAB_PAD_DOWN), DEC);
+    DCMotor_3->setSpeed(SPEED_PWM);
+    DCMotor_1->setSpeed(SPEED_PWM);
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(BACKWARD);
+  }
+  // Останов
+  else {
+    DCMotor_3->setSpeed(0);
+    DCMotor_3->run(RELEASE);
+    DCMotor_1->setSpeed(0);
+    DCMotor_1->run(RELEASE);
+  }
+}
+
+void flashActuator() {
   if (ps2x.NewButtonState()) {
     // Нажатие кнопки пульта для выполнения соленоида
-    if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) { Serial.println("L2 pressed"); digitalWrite(actuator, HIGH); }
+    if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) { Serial.println("L2 and R2 pressed"); digitalWrite(actuator, HIGH); }
     else { digitalWrite(actuator, LOW); }
   }
-  //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-  if (ps2x.Analog(PSS_LY) > 130) { // > 130. Вперёд
-    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 135, 255, 10, 10))); // 130, 255, 10, 20
-    DCMotor_3->setSpeed(10); // 130, 255, 10, 20
-    DCMotor_1->setSpeed(10); // 130, 255, 10, 20
-    DCMotor_3->run(BACKWARD);
-    DCMotor_1->run(BACKWARD);
-  }
-  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Назад
-    //DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, 10, 10)));
-    DCMotor_3->setSpeed(10);
-    DCMotor_1->setSpeed(10);
-    DCMotor_3->run(FORWARD);
-    DCMotor_1->run(FORWARD);
-  }
-  else {
-    DCMotor_3->setSpeed(0);
-    DCMotor_1->setSpeed(0);
-    DCMotor_3->run(RELEASE);
-    DCMotor_1->run(RELEASE);
-  }
-  // Левый джойстик. Медленно. Влево - вправо
-
-  if (ps2x.Analog(PSS_LX) > 128) { // > 128. Вправо
-    DCMotor_3->setSpeed(10); // 130, 255, 10, 20
-    DCMotor_1->setSpeed(10); // 130, 255, 10, 20
-    DCMotor_3->run(BACKWARD);
-    DCMotor_1->run(FORWARD);
-
-  }
-  else if (ps2x.Analog(PSS_LX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed(10);
-    DCMotor_1->setSpeed(10);
-    DCMotor_3->run(FORWARD);
-    DCMotor_1->run(BACKWARD);
-  }
-  else {
-    DCMotor_3->setSpeed(0);
-    DCMotor_1->setSpeed(0);
-    DCMotor_3->run(RELEASE);
-    DCMotor_1->run(RELEASE);
-  }
-  delay(50);
-
 }
 // Тест моторов без джойстика
 /*
