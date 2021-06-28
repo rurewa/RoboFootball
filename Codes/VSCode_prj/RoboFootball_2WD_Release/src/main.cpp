@@ -18,8 +18,9 @@ const int PS2_CLK = 13;
 PS2X ps2x; // Класс PS2 контроллера
 
 const int ACTUATOR = 5; // Пин соленоид
-const int SPEED_PWM_SLOW = 50; // Медленная движение
-const int SPEED_PWM_FAST = 170; // Быстрое движение
+const int SPEED_PWM_SLOW = 35; // Медленная движение
+const int SPEED_PWM_FAST = 75; // Быстрое движение
+const int SPEED_TURN = 45; // Скорость на поворотах
 // Функции управления
 void movePSBpad(); // Движение кнопками
 void leftJoystick(); // Медленное движение
@@ -75,8 +76,8 @@ void movePSBpad() {
     DCMotor_1->run(BACKWARD);
   }
   else  if (ps2x.Button(PSB_PAD_LEFT)) { // Движение влево
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_3->setSpeed(SPEED_TURN);
+    DCMotor_1->setSpeed(SPEED_TURN);
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(FORWARD);
   }
@@ -106,14 +107,14 @@ void leftJoystick() { // Левый джойстик (медленная ско�
     DCMotor_1->run(FORWARD);
   }
   if (ps2x.Analog(PSS_LX) > 128) { // Ось X > 128. Вправо
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_3->setSpeed(SPEED_TURN);
+    DCMotor_1->setSpeed(SPEED_TURN);
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(BACKWARD);
   }
   if (ps2x.Analog(PSS_LX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_3->setSpeed(SPEED_TURN);
+    DCMotor_1->setSpeed(SPEED_TURN);
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(FORWARD);
   }
@@ -135,14 +136,14 @@ void rightJoystick() { // Правый джойстик (регулируема�
     DCMotor_1->run(FORWARD);
   }
   if (ps2x.Analog(PSS_RX) > 128) { // По оси X > 128. Вправо
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_3->setSpeed(SPEED_TURN);
+    DCMotor_1->setSpeed(SPEED_TURN);
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(BACKWARD);
   }
   if (ps2x.Analog(PSS_RX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_3->setSpeed(SPEED_TURN);
+    DCMotor_1->setSpeed(SPEED_TURN);
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(FORWARD);
   }
