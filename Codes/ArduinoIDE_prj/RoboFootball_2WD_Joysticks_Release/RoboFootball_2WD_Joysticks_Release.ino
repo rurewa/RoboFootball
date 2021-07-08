@@ -6,25 +6,8 @@
 // Свободные пины шилда: D2, D3, D4, D5, D6, D7 + все аналоговые.
 // V 1.0
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-#include "PS2X_lib.h"
-#include "QGPMaker_MotorShield.h"
-
-//////////// SETING ///////////////////////////////////////////////////////////
-                                                                             //
-const int SPEED_PWM_SLOW = 50; //скорость для прицеливания                   //                                                                          //
-const int MAX_SPEED = 85;     // максимальная скорость для ШИМ регулировки  //
-const int MIN_SPEED = 50 ;     // минимальная скорость для ШИМ регулировки   //
-const int n = 1;               // коэффициент для усиления подруливаний      //
-                                                                             //
-///////////////////////////////////////////////////////////////////////////////
-
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-// Release for ps2x motor shield v5.2 & PS2X controll
-// Для перезапуска связи контроллера с радиомодулем шилда нажать на START
-// Свободные пины шилда: D5, D6 (к одному из них можно подключить соленоид)
-// V 1.0
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-
+#include <PS2X_lib.h>
+#include <QGPMaker_MotorShield.h>
 
 // Пины радиомодуля
 const int PS2_DAT = 12;
@@ -32,14 +15,21 @@ const int PS2_CMD = 11;
 const int PS2_SEL = 10;
 const int PS2_CLK = 13;
 
-PS2X ps2x; // Класс PS2 контроллера
-
 const int ACTUATOR = 5; // Пин соленоид
 
+const int SPEED_PWM_SLOW = 50; // Скорость для "прицеливания"
+const int MAX_SPEED = 85;      // Максимальная скорость для ШИМ регулировки
+const int MIN_SPEED = 30 ;     // Минимальная скорость для ШИМ регулировки
+
+const int SMOOTH_TURNING = 2; // Коэффициент плавности поворотов
+
+PS2X ps2x; // Класс PS2 контроллера
+
 // Функции управления
-void movePSBpad(); // Движение кнопками
-void Joysticks(); // Быстрое движение
+void movePSBpad(); // Движение с помощью кнопок слева
+void Joysticks(); // Быстрое движение джойстиками
 void kickActuator(); // Соленоид
+void steering(); // Подруливание влево/вправо кнопками справа (квадрат/круг)
 
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield(); // Объект шины I2C
 // Объекты моторов (M3) или (M1) на шилде
@@ -63,13 +53,25 @@ void setup() {
 void loop() {
   byte vibrate = 0; // Вибро-мотор пульта
   ps2x.read_gamepad(false, vibrate); // Читаем контроллер и устанавливаем вибро-мотор
-  kickActuator(); // Соленоид
-  movePSBpad(); // Медленное движение кнопками (прицеливание)
-  Joysticks(); // быстрое движение с ШИМ
+  kickActuator();
+  movePSBpad();
+  Joysticks();
+  steering();
   delay(10); // Небольшая задержка для стабилизации
 }
 
-void movePSBpad() {
+void steering() { // Подруливание влево/вправо кнопками справа (квадрат/круг)
+  if (ps2x.Button(PSB_CIRCLE)) { // Движение вправо
+    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_3->run(FORWARD);
+  }
+  if (ps2x.Button(PSB_SQUARE)) { // Движение влево
+    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+    DCMotor_1->run(FORWARD);
+  }
+}
+
+void movePSBpad() { // Движение с помощью кнопок слева
   if (ps2x.Button(PSB_PAD_UP)) { // Движение вперёд
     DCMotor_3->setSpeed(SPEED_PWM_SLOW);
     DCMotor_1->setSpeed(SPEED_PWM_SLOW);
@@ -100,73 +102,28 @@ void movePSBpad() {
   }
 }
 
-void Joysticks() { // Левый джойстик вперед/назад. правый джойстик право/лево
-  // Вперёд
+void Joysticks() { // Левый джойстик вперед/назад. Правый джойстик право/лево
   if ((ps2x.Analog(PSS_LY) > 130) && (ps2x.Analog(PSS_RX) < 130) && (ps2x.Analog(PSS_RX) > 125)) { // Назад
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, MIN_SPEED, MAX_SPEED)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, MIN_SPEED, MAX_SPEED)));
+    DCMotor_3->setSpeed(map(ps2x.Analog(PSS_LY), 130, 255, MIN_SPEED, MAX_SPEED));
+    DCMotor_1->setSpeed(map(ps2x.Analog(PSS_LY), 130, 255, MIN_SPEED, MAX_SPEED));
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(BACKWARD);
   }
-  // Назад
   if ((ps2x.Analog(PSS_LY) < 125) && (ps2x.Analog(PSS_RX) < 130) && (ps2x.Analog(PSS_RX) > 125)) { // Вперед
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, MIN_SPEED, MAX_SPEED)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, MIN_SPEED, MAX_SPEED)));
+    DCMotor_3->setSpeed(map(ps2x.Analog(PSS_LY), 125, 0, MIN_SPEED, MAX_SPEED));
+    DCMotor_1->setSpeed(map(ps2x.Analog(PSS_LY), 125, 0, MIN_SPEED, MAX_SPEED));
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(FORWARD);
   }
-  ////////////////////////////////
-  // подруливание вправо вперед //
-  ////////////////////////////////
-
-  if ((ps2x.Analog(PSS_LY) < 125) && (ps2x.Analog(PSS_RX) > 130) && (ps2x.Analog(PSS_RX) <= 255)) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)*n));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MAX_SPEED, MIN_SPEED)/n));
-    DCMotor_3->run(FORWARD);
-    DCMotor_1->run(FORWARD);
-  }
-  ///////////////////////////////
-  // подруливание влево вперед //
-  ///////////////////////////////
-  if ((ps2x.Analog(PSS_LY) < 125) && (ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_RX) >= 0)) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MAX_SPEED, MIN_SPEED)/n));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)*n));
-    DCMotor_3->run(FORWARD);
-    DCMotor_1->run(FORWARD);
-  }
-  ///////////////////////////////
-  // подруливание вправо назад //
-  ///////////////////////////////
-  if ((ps2x.Analog(PSS_LY) > 130) && (ps2x.Analog(PSS_RX) > 130) && (ps2x.Analog(PSS_RX) <= 255)) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)*n));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MAX_SPEED, MIN_SPEED)/n));
-    DCMotor_3->run(BACKWARD);
-    DCMotor_1->run(BACKWARD);
-  }
-  //////////////////////////////
-  // подруливание влево назад //
-  //////////////////////////////
-  if ((ps2x.Analog(PSS_LY) > 130) && (ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_RX) >= 0)) {
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MAX_SPEED, MIN_SPEED)*n));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)*n));
-    DCMotor_3->run(BACKWARD);
-    DCMotor_1->run(BACKWARD);
-  }
-  /////////////////////
-  // кручение вправо //
-  /////////////////////
   if ((ps2x.Analog(PSS_RX) > 130) && (ps2x.Analog(PSS_LY) < 130) && (ps2x.Analog(PSS_LY) > 125)) { // Вправо
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)));
+    DCMotor_3->setSpeed(map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)/SMOOTH_TURNING);
+    DCMotor_1->setSpeed(map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)/SMOOTH_TURNING);
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(BACKWARD);
   }
-  ////////////////////
-  // кручение влево //
-  ////////////////////
-  if ((ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_LY) < 130) && (ps2x.Analog(PSS_LY) > 125)) { //
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)));
+  if ((ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_LY) < 130) && (ps2x.Analog(PSS_LY) > 125)) { // Влево
+    DCMotor_3->setSpeed(map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)/SMOOTH_TURNING);
+    DCMotor_1->setSpeed(map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)/SMOOTH_TURNING);
     DCMotor_1->run(FORWARD);
     DCMotor_3->run(BACKWARD);
   }
