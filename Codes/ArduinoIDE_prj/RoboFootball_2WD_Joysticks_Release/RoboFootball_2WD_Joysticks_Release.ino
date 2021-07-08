@@ -1,13 +1,30 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 // Release for ps2x motor shield v5.2 & PS2X gamepad.
-// Правый джойстик - быстрая езда. Левый джойстик и блок кнопок слева - медленная езда.
+// Левый джойстик - вперёд/назад. Правый джойстик - влево/вправо. Блок кнопок слева - медленный ход во все стороны
 // Для перезапуска связи контроллера с радиомодулем шилда нажать на кнопку START (ещё не готово)
 // Осталось настроить чувствительность правого джойстика.
-// Свободные пины шилда: D6
+// Свободные пины шилда: D2, D3, D4, D5, D6, D7 + все аналоговые.
 // V 1.0
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-#include "PS2X_lib.h"  // for v1.6
+#include "PS2X_lib.h"
 #include "QGPMaker_MotorShield.h"
+
+//////////// SETING ///////////////////////////////////////////////////////////
+                                                                             //
+const int SPEED_PWM_SLOW = 50; //скорость для прицеливания                   //                                                                          //
+const int MAX_SPEED = 85;     // максимальная скорость для ШИМ регулировки  //
+const int MIN_SPEED = 50 ;     // минимальная скорость для ШИМ регулировки   //
+const int n = 1;               // коэффициент для усиления подруливаний      //
+                                                                             //
+///////////////////////////////////////////////////////////////////////////////
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+// Release for ps2x motor shield v5.2 & PS2X controll
+// Для перезапуска связи контроллера с радиомодулем шилда нажать на START
+// Свободные пины шилда: D5, D6 (к одному из них можно подключить соленоид)
+// V 1.0
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+
 
 // Пины радиомодуля
 const int PS2_DAT = 12;
@@ -17,20 +34,17 @@ const int PS2_CLK = 13;
 
 PS2X ps2x; // Класс PS2 контроллера
 
-const int actuator = 5; // Соленоид
-const int SPEED_PWM_SLOW = 10;
-const int SPEED_PWM_FAST= 50;
-byte vibrate = 0;
+const int ACTUATOR = 5; // Пин соленоид
+
 // Функции управления
 void movePSBpad(); // Движение кнопками
-void leftJoystick(); // Медленное движение
-void rightJoystick(); // Быстрое движение
-void flashActuator(); // Соленоид
+void Joysticks(); // Быстрое движение
+void kickActuator(); // Соленоид
 
 QGPMaker_MotorShield AFMS = QGPMaker_MotorShield(); // Объект шины I2C
 // Объекты моторов (M3) или (M1) на шилде
-QGPMaker_DCMotor  *DCMotor_3 = AFMS.getMotor(3); // Левая сторона
-QGPMaker_DCMotor  *DCMotor_1 = AFMS.getMotor(1); // Правая сторона
+QGPMaker_DCMotor *DCMotor_3 = AFMS.getMotor(3); // Левая сторона
+QGPMaker_DCMotor *DCMotor_1 = AFMS.getMotor(1); // Правая сторона
 
 void setup() {
   Serial.begin(9600);
@@ -43,26 +57,16 @@ void setup() {
     else { delay(100); }
   }
   while (true);
-  for(size_t i = 0; i < 50; i++) { // Очистка частот радиоканала
-    ps2x.read_gamepad(false, 0);
-    delay(10);
-  }
-  pinMode(actuator, OUTPUT);
+  pinMode(ACTUATOR, OUTPUT);
 }
 
 void loop() {
-  ps2x.read_gamepad(false, vibrate); // Читаем контроллер и установаем вибро-мотор
-  if (ps2x.Button(PSB_CROSS)) { // Проверка работы джойстика (запуск вибро-мотора)
-    Serial.println("X-X-X-X");
-    ps2x.read_gamepad(true, 200);
-    delay(300);
-    ps2x.read_gamepad(false, 0);
-  }
-  flashActuator(); // Соленоид
-  movePSBpad(); // Движение кнопками
-  leftJoystick(); // Медленное движение
-  rightJoystick(); // Быстрое движение
-  delay(40);
+  byte vibrate = 0; // Вибро-мотор пульта
+  ps2x.read_gamepad(false, vibrate); // Читаем контроллер и устанавливаем вибро-мотор
+  kickActuator(); // Соленоид
+  movePSBpad(); // Медленное движение кнопками (прицеливание)
+  Joysticks(); // быстрое движение с ШИМ
+  delay(10); // Небольшая задержка для стабилизации
 }
 
 void movePSBpad() {
@@ -96,69 +100,92 @@ void movePSBpad() {
   }
 }
 
-void leftJoystick() { // Левый джойстик (медленная скорость).
-  if (ps2x.Analog(PSS_LY) > 130) { // Ось Y > 130. Назад
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+void Joysticks() { // Левый джойстик вперед/назад. правый джойстик право/лево
+  // Вперёд
+  if ((ps2x.Analog(PSS_LY) > 130) && (ps2x.Analog(PSS_RX) < 130) && (ps2x.Analog(PSS_RX) > 125)) { // Назад
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, MIN_SPEED, MAX_SPEED)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, MIN_SPEED, MAX_SPEED)));
     DCMotor_3->run(BACKWARD);
     DCMotor_1->run(BACKWARD);
   }
-  else if (ps2x.Analog(PSS_LY) < 120) { // < 125. Вперёд
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+  // Назад
+  if ((ps2x.Analog(PSS_LY) < 125) && (ps2x.Analog(PSS_RX) < 130) && (ps2x.Analog(PSS_RX) > 125)) { // Вперед
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, MIN_SPEED, MAX_SPEED)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 125, 0, MIN_SPEED, MAX_SPEED)));
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(FORWARD);
   }
-  else {} // Останов
-  if (ps2x.Analog(PSS_LX) > 128) { // Ось X > 128. Вправо
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_3->run(BACKWARD);
+  ////////////////////////////////
+  // подруливание вправо вперед //
+  ////////////////////////////////
+
+  if ((ps2x.Analog(PSS_LY) < 125) && (ps2x.Analog(PSS_RX) > 130) && (ps2x.Analog(PSS_RX) <= 255)) {
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)*n));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MAX_SPEED, MIN_SPEED)/n));
+    DCMotor_3->run(FORWARD);
     DCMotor_1->run(FORWARD);
   }
-  else if (ps2x.Analog(PSS_LX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed(SPEED_PWM_SLOW);
-    DCMotor_1->setSpeed(SPEED_PWM_SLOW);
+  ///////////////////////////////
+  // подруливание влево вперед //
+  ///////////////////////////////
+  if ((ps2x.Analog(PSS_LY) < 125) && (ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_RX) >= 0)) {
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MAX_SPEED, MIN_SPEED)/n));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)*n));
+    DCMotor_3->run(FORWARD);
+    DCMotor_1->run(FORWARD);
+  }
+  ///////////////////////////////
+  // подруливание вправо назад //
+  ///////////////////////////////
+  if ((ps2x.Analog(PSS_LY) > 130) && (ps2x.Analog(PSS_RX) > 130) && (ps2x.Analog(PSS_RX) <= 255)) {
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)*n));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MAX_SPEED, MIN_SPEED)/n));
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(BACKWARD);
+  }
+  //////////////////////////////
+  // подруливание влево назад //
+  //////////////////////////////
+  if ((ps2x.Analog(PSS_LY) > 130) && (ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_RX) >= 0)) {
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MAX_SPEED, MIN_SPEED)*n));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)*n));
+    DCMotor_3->run(BACKWARD);
+    DCMotor_1->run(BACKWARD);
+  }
+  /////////////////////
+  // кручение вправо //
+  /////////////////////
+  if ((ps2x.Analog(PSS_RX) > 130) && (ps2x.Analog(PSS_LY) < 130) && (ps2x.Analog(PSS_LY) > 125)) { // Вправо
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 130, 255, MIN_SPEED, MAX_SPEED)));
     DCMotor_3->run(FORWARD);
     DCMotor_1->run(BACKWARD);
   }
-  else {} // Останов
+  ////////////////////
+  // кручение влево //
+  ////////////////////
+  if ((ps2x.Analog(PSS_RX) < 125) && (ps2x.Analog(PSS_LY) < 130) && (ps2x.Analog(PSS_LY) > 125)) { //
+    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)));
+    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_RX), 125, 0, MIN_SPEED, MAX_SPEED)));
+    DCMotor_1->run(FORWARD);
+    DCMotor_3->run(BACKWARD);
+  }
 }
 
-void rightJoystick() { // Правый джойстик (регулируемая скорость.
-  if (ps2x.Analog(PSS_RY) > 130) { // По оси Y > 130. Назад
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_3->run(BACKWARD);
-    DCMotor_1->run(BACKWARD);
-  }
-  else if (ps2x.Analog(PSS_RY) < 120) { // < 125. Вперёд
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_3->run(FORWARD);
-    DCMotor_1->run(FORWARD);
-  }
-  else {} // Останов
-  if (ps2x.Analog(PSS_RX) > 128) { // По оси X > 128. Вправо
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_3->run(BACKWARD);
-    DCMotor_1->run(FORWARD);
-  }
-  else if (ps2x.Analog(PSS_RX) < 125) { // < 125. Влево
-    DCMotor_3->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_1->setSpeed((map(ps2x.Analog(PSS_LY), 130, 255, 30, 255)));
-    DCMotor_3->run(FORWARD);
-    DCMotor_1->run(BACKWARD);
-  }
-  else {} // Останов
-}
-
-void flashActuator() { // Нажатие кнопки пульта для выполнения соленоида
+void kickActuator() { // Нажатие кнопки пульта для выполнения соленоида
   if (ps2x.NewButtonState()) {
     if (ps2x.Button(PSB_L2) || ps2x.Button(PSB_R2)) {
-      Serial.println("L2 and R2 pressed"); digitalWrite(actuator, HIGH); }
-    else { digitalWrite(actuator, LOW); }
+      Serial.println("L2 or R2"); digitalWrite(ACTUATOR, HIGH); }
+    else { digitalWrite(ACTUATOR, LOW); }
+  }
+}
+
+void vibroCrossPSB() {
+  if (ps2x.Button(PSB_CROSS)) { // Проверка работы джойстика (запуск вибро-мотора)
+    Serial.println("X-X-X-X");
+    ps2x.read_gamepad(true, 200);
+    delay(300);
+    ps2x.read_gamepad(false, 0);
   }
 }
 // Тест моторов без джойстика
@@ -190,6 +217,7 @@ void flashActuator() { // Нажатие кнопки пульта для вып
   if (ps2x.Button(PSB_SELECT))
     Serial.println("Select is being held");
   */
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 // END FILE
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
