@@ -9,7 +9,7 @@ void setup() {
 }
 
 void loop() {
-  smoothStart(255, 15, 200);
+  softStart(255, 15, 200);
 }
 /*
 void movePSBpad(bool ) {
@@ -29,7 +29,7 @@ void movePSBpad(bool ) {
 }
 */
 
-void smoothStart(int MAX_SPEED, int STEPS, int DELAYS) {
+void softStart(int MAX_SPEED, int STEPS, int DELAYS) {
   static int counter = 0;
   if (digitalRead(buttonPin) == true) {
     counter += STEPS;
